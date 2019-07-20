@@ -6,7 +6,7 @@
     [±] 修补
 # 应用划分
     [ ]  API         RESTFul风格的API
-    [ ]  Backend     后台管理
+    [*]  Backend     后台管理
     [ ]  COMMON      通用代码
     [ ]  Console     脚本命令
     [ ]  Doc         文档
@@ -24,11 +24,11 @@
     [ ]  Project     项目管理工具
     [ ]  Q&A         问卷调查
     [ ]  Resource    资源管理：图片、视频、音频、下载
-    [ ]  Software    软件库
+    [ ]  Search      搜索引擎，Sphinx高效、Xunsearch支持中文拼音，易用
     [ ]  Test        测试用例
     [ ]  UserCenter  用户中心，单点登录
     [ ]  View        视图、组件
     [ ]  WebService  服务
-    [ ]  X           不推荐的写法
-    [ ]  Y           
+    [ ]  X           弥补PHP的短板，Swoole框架、Docker、workerman
+    [ ]  Y           WHY 深入了解原理
     [ ]  Zend        官方

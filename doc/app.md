@@ -30,5 +30,5 @@
     [ ]  View        视图、组件
     [ ]  WebService  服务
     [ ]  X           不推荐的写法
-    [ ]  Y           
+    [ ]  Yes_whY     是什么&为什么          
     [ ]  Zend        官方

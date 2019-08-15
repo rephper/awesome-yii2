@@ -1,0 +1,30 @@
+# Ubuntu安装
+## 分区设置
+
+## Ubuntu-18.04更改安装源为国内源
+  修改源文件 /etc/apt/sources.list
+
+  改完阿里源
+  deb http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
+  deb-src http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
+
+  deb http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
+  deb-src http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
+
+  deb http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
+  deb-src http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
+
+  deb http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
+  deb-src http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
+
+  deb http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
+  deb-src http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
+
+  更新
+  sudo apt-get update
+  sudo apt-get upgrade
+  
+## 基础软件安装
+
+
+## LNMP环境搭建

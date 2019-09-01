@@ -1,3 +1,4 @@
+![avatar](../../resource/img/yii2/request-lifecycle.png)
 # Download Code
   compoer
 

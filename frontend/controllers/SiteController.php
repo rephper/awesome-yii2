@@ -20,6 +20,9 @@ use frontend\models\ContactForm;
  */
 class SiteController extends Controller
 {
+    //  指定默认动作，默认为index，可指定其他actionID
+    public $defaultAction = 'index';
+
     /**
      * {@inheritdoc}
      */
@@ -53,6 +56,7 @@ class SiteController extends Controller
 
     /**
      * {@inheritdoc}
+     * 要使用独立操作，需要通过控制器中覆盖yii\base\Controller::actions()方法在action map中申明
      */
     public function actions()
     {

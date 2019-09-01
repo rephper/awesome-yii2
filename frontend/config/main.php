@@ -37,7 +37,7 @@ return [
 
     //  该属性指定控制器类默认的命名空间
     'controllerNamespace' => 'frontend\controllers',
-    //  使用这个配置可以打破 Yii2 默认的URL规则
+    //  使用这个配置可以打破 Yii2 默认的路由规则
 //    'controllerMap' => [
 //        Yii::$app->controllerId => @app\controllers\xxxIdController,
 //        Yii::$app->controllerId => @app\controllers\groupName\xxxIdController,

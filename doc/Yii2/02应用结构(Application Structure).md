@@ -1,4 +1,4 @@
-
+# 结构总览
 ![avatar](../../resource/img/yii2/application-structure.png)
 ## MVC
      M 模型代表数据、业务逻辑和规则； 
@@ -11,6 +11,7 @@
      模块：    包含完整 MVC 结构的独立包， 一个应用可以由多个模块组建。
      过滤器：   控制器在处理请求之前或之后 需要触发执行的代码。
      小部件：   可嵌入到视图中的对象， 可包含控制器逻辑，可被不同视图重复调用
+
 ## 生命周期
     当运行 入口脚本 处理请求时， 应用主体会经历以下生命周期:
     
@@ -26,8 +27,8 @@
     触发 EVENT_AFTER_REQUEST 事件。
     发送响应到终端用户。
 ### 入口脚本接收应用主体传来的退出状态并完成请求的处理。     
-     
-![avatar](../../resource/img/yii2/application-lifecycle.png)
+
+![avatar](../../resource/img/yii2/application-lifecycle.png)     
 ## 入口脚本  
     每个应用只有一个，负责实例化应用并转发请求到应用    
         WEB应用的入口脚本：@app/web/index.php
@@ -41,11 +42,19 @@
         WEB应用：(new yii\web\Application($config))->run();
         控制台应用：(new yii\console\Application($config))->run();
     
+### 应用主体属性    
     必要属性
         id          用来区分其他应用的唯一标识ID
         basePath    指定该应用的根目录,系统预定义 @app 代表这个路径
         
     重要属性
+        aliases     定义别名，代替 Yii::setAlias() 方法来设置—— @app/config/bootstrap.php
+        
+        bootstrap   它允许你用数组指定启动阶段 bootstrapping process 需要运行的组件
+            比如 自定义URL规则、log、debug、gii
+            在启动阶段，每个组件都会实例化
+            注意：启动太多的组件会降低系统性能，因为每次请求都需要重新运行启动组件，因此谨慎配置启动组件。
+    
         components  [最重要的属性]它允许你注册多个在其他地方使用的 应用组件
             'components' => [
                 'cache' => [
@@ -58,13 +67,6 @@
             ],
             在应用中可以任意注册组件，并可以通过表达式 \Yii::$app->ComponentID 全局访问。
             
-        aliases     定义别名，代替 Yii::setAlias() 方法来设置—— @app/config/bootstrap.php
-        
-        bootstrap   它允许你用数组指定启动阶段 bootstrapping process 需要运行的组件
-            比如 自定义URL规则、log、debug、gii
-            在启动阶段，每个组件都会实例化
-            注意：启动太多的组件会降低系统性能，因为每次请求都需要重新运行启动组件，因此谨慎配置启动组件。
-    
         catchAll    该属性仅 Web applications 网页应用支持。 
             它指定一个要处理所有用户请求的 控制器方法，
             通常在维护模式下使用，同一个方法处理所有用户请求。
@@ -86,7 +88,7 @@
             
         params      该属性为一个数组，指定可以全局访问的参数， 代替程序中硬编码的数字和字符， 
             应用中的参数定义到一个单独的文件并随时可以访问是一个好习惯    
-## 应用事件
+### 应用事件
     应用在处理请求过程中会触发事件，可以在配置文件配置事件处理代码
         'on eventName' => function ($event) { 要执行的处理 }
     @app/config/main.php配置 如下所示：
@@ -126,4 +128,59 @@
         注意 模块 和 控制器 都会触发 afterAction 事件。 
         这些对象的触发顺序和 beforeAction 相反，
         也就是说，控制器最先触发，然后是模块（如果有模块），最后为应用主体。
+        
+## 应用组件
+    应用主体是服务定位器， 它部署一组提供各种不同功能的 应用组件 来处理请求
+    在同一个应用中，每个应用组件都有一个独一无二的 ID 用来区分其他应用组件 \Yii::$app->componentID
+    例如，urlManager组件负责处理网页请求路由到对应的控制器。 db组件(\Yii::$app->db)提供数据库相关服务等等。
+    [*]components组件是懒加载，bootstrap在初始化应用时就会加载
+    第一次使用以上表达式时候会创建应用组件实例， 后续再访问会返回此实例，无需再次创建
+    请谨慎注册太多应用组件， 应用组件就像全局变量， 使用太多可能加大测试和维护的难度。 
+    一般情况下可以在需要时再创建本地组件。
+    应用组件可以是任意对象，可以在 应用主体配置配置 yii\base\Application::$components 属性
+         
+### 核心应用组件
+    Yii 定义了一组固定ID和默认配置的 核心 组件：
+    assetManager: 管理资源包和资源发布。
+    db: 代表一个可以执行数据库操作的数据库连接， 注意配置该组件时必须指定组件类名和其他相关组件属性。
+    errorHandler: 处理 PHP 错误和异常。
+    formatter: 格式化输出显示给终端用户的数据，例如数字可能要带分隔符， 日期使用长格式。
+    i18n: 支持信息翻译和格式化。
+    log: 管理日志对象。 
+    mail: 支持生成邮件结构并发送。
+    response: 代表发送给用户的响应。
+    request: 代表从终端用户处接收到的请求。
+    session: 代表会话信息， 仅在Web applications 网页应用中可用。 
+    urlManager: 支持URL地址解析和创建。 
+    user: 代表认证登录用户信息， 仅在Web applications 网页应用中可用。
+    view: 支持渲染视图。
+    
+## 控制器
+    webController extends yii\base\Controller
+    consoleController extends yii\console\Controller
+    控制器从应用主体 接管控制后会分析请求数据并传送到模型， 传送模型结果到视图，最后生成输出响应信息。
+    命名规则：控制器ID应仅包含英文小写字母、数字、下划线、中横杠和正斜杠
+    控制器Id可包含子目录前缀
+    子目录前缀可为英文大小写字母、数字、下划线、正斜杠，其中正斜杠用来区分多级子目录(如 panels/admin)
+
+    在不使用模块时可以通过目录分组管理控制器
+    @app\controllers\[ModuleID\]FirstSeccontroller 对应路由规则为 [ModuleID/]first-sec
+    @app\controllers\[subDir\]FirstSeccontroller 对应路由规则为 [subDir/]first-sec
+## 动作    
+### 内联动作
+    在控制器中的 actionXxx(){ //动作 }
+    actionID应仅包含英文小写字母、数字、下划线和中横杠，操作ID中的中横杠用来分隔单词
+    ControllerIDController/actionXxxYyy对应的路径规则为 ControllerID/xxx-yyy
+    
+    操作方法的名字大小写敏感，
+    如果方法名称为ActionIndex不会认为是操作方法， 所以请求index操作会返回一个异常，
+    也要注意操作方法必须是公有的， 私有或者受保护的方法不能定义成内联操作
+    
+    controller内部可以指定默认action,默认为index
+    public $defaultAction = 'home';
+### 独立动作
+    singleAction extends yii\base\Action或它的子类的类，主要用于多个控制器重用，或重构为扩展
+    例如Yii发布的yii\web\ViewAction 和yii\web\ErrorAction都是独立操作。
+    要使用独立操作，需要通过控制器中覆盖yii\base\Controller::actions()方法在action map中申明， 如下例所示：
+    
         

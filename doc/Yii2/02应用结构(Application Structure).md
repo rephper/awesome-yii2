@@ -166,8 +166,8 @@
     在不使用模块时可以通过目录分组管理控制器
     @app\controllers\[ModuleID\]FirstSeccontroller 对应路由规则为 [ModuleID/]first-sec
     @app\controllers\[subDir\]FirstSeccontroller 对应路由规则为 [subDir/]first-sec
-## 动作    
-### 内联动作
+### 动作    
+#### 内联动作
     在控制器中的 actionXxx(){ //动作 }
     actionID应仅包含英文小写字母、数字、下划线和中横杠，操作ID中的中横杠用来分隔单词
     ControllerIDController/actionXxxYyy对应的路径规则为 ControllerID/xxx-yyy
@@ -178,9 +178,52 @@
     
     controller内部可以指定默认action,默认为index
     public $defaultAction = 'home';
-### 独立动作
+#### 独立动作
     singleAction extends yii\base\Action或它的子类的类，主要用于多个控制器重用，或重构为扩展
     例如Yii发布的yii\web\ViewAction 和yii\web\ErrorAction都是独立操作。
     要使用独立操作，需要通过控制器中覆盖yii\base\Controller::actions()方法在action map中申明， 如下例所示：
     
+## 模型
+    xxxModel extends yii\base\Model 或Model 的子类
+    xxxModel extends yii\db\ActiveRecord 
+    模型是代表业务数据、规则和逻辑的对象
+    模型通过 属性 来代表业务数据，每个属性像是模型的公有可访问属性
+    public function attributes() 指定模型所拥有的属性
+    //  明确指定属性标签, 便于视图中显示
+    public function attributeLabels() {
+        //  应用支持多语言的情况下，可翻译属性标签
+        'name' => \Yii::t('app', 'Your name'),
+        //  甚至可以根据条件定义标签
+        'body' => function() {
+            if ($this->scenario) {}
+        }
+    }
+    //  定义不同场景需要验证的属性，块赋值只应用在模型指定的当前场景生效的属性上，其他属性不会被赋值
+    public function scenarios() {
+        'scenario1' => ['attribute1', 'attribute2'],
+        //  属性名加一个惊叹号 ! 表示该属性不是安全属性，但是也会被校验
+        //  如 attribute3不会被块赋值，必须显式赋值：$model->attribute3 = 'value';
+        'scenario2' => ['attribute1', 'attribute2', '!attribute3'],
+    }
+    //  定义属性的验证规则
+    public function rules() {
+        //  on 可用于指定属性生效的场景,如：文件上传与数据查看 属于不同场景
+        ['attribute2', 'string', 'on' => 'scenario1'],
+        ['attribute2', 'file', 'on' => 'scenario2'],
+        //  没有on则在所有场景生效
+        //  自定义验证方法，在没有错误的时候，一定要 return true;
         
+        //  安全属性,safe验证器申明 哪些属性是安全的不需要被验证
+        [['title', 'description'], 'safe'],
+        //  description 前加 ！ 表示非安全属性
+        [['title1', '!description'], 'string'],
+    }
+    
+    数据导出
+    $model->scenario = self::SCENARIO_FIRST;
+    $model->toArray([], $expand);   //  $expand指定额外可用字段
+    public function fields() {定义的字段是默认字段}
+    public function extraFields() {定义额外可用字段}
+
+## 视图    
+           

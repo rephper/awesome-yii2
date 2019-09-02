@@ -5,6 +5,7 @@ use Yii;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
+use yii\helpers\ArrayHelper;
 use yii\web\IdentityInterface;
 
 /**
@@ -24,6 +25,27 @@ use yii\web\IdentityInterface;
  */
 class User extends ActiveRecord implements IdentityInterface
 {
+    //  指定场景 并指定场景需要验证的属性
+    const SCENARIO_LOGIN = 'login';
+    const SCENARIO_REGISTER = 'register';
+
+    public $username;
+    public $password;
+    public $email;
+
+    public function scenarios()
+    {
+        //  重写父类方法时，要考虑兼容父类已有的数据
+        return ArrayHelper::merge(
+            parent::scenarios(),
+            [
+                self::SCENARIO_LOGIN => ['username', 'password'],
+                self::SCENARIO_REGISTER => ['username', 'email', 'password'],
+            ]
+        );
+    }
+
+
     const STATUS_DELETED = 0;
     const STATUS_INACTIVE = 9;
     const STATUS_ACTIVE = 10;
@@ -55,6 +77,7 @@ class User extends ActiveRecord implements IdentityInterface
         return [
             ['status', 'default', 'value' => self::STATUS_INACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
+            //  on 可用于指定 规则生效的场景
         ];
     }
 

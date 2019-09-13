@@ -225,5 +225,124 @@
     public function fields() {定义的字段是默认字段}
     public function extraFields() {定义额外可用字段}
 
-## 视图    
-           
+## 视图 
+    /* @var $this yii\web\View */   
+    $this 指向 view component 来管理和渲染这个视图文件
+    其他变量通过控制器分配
+    控制器渲染的视图文件默认放在 @app/[/ModuleDIr/]views/ControllerID 目录下
+    对于 小部件 渲染的视图文件默认放在 WidgetPath/views 目录
+    
+    可覆盖控制器或小部件的 yii\base\ViewContextInterface::getViewPath() 方法来自定义视图文件默认目录。
+### 安全
+    在显示之前将用户输入数据进行转码和过滤非常重要， 否则，你的应用可能会被 跨站脚本 攻击。
+    要显示纯文本，先调用 yii\helpers\Html::encode() 进行转码
+        <?= Html::encode($user->name) ?>
+    要显示HTML内容，先调用 yii\helpers\HtmlPurifier 过滤内容，但是性能不佳
+        <?= HtmlPurifier::process($post->text) ?>
+### 渲染视图
+    在 控制器 中，可调用以下控制器方法来渲染视图    
+    render(): 渲染一个 视图名 并使用一个 布局 返回到渲染结果。
+    renderPartial(): 渲染一个 视图名 并且不使用布局。
+    renderAjax(): 渲染一个 视图名 并且不使用布局， 并注入所有注册的JS/CSS脚本和文件，通常使用在响应AJAX网页请求的情况下。
+    renderFile(): 渲染一个视图文件目录或 别名下的视图文件。
+    renderContent(): renders a static string by embedding it into the currently applicable layout.
+### 视图名    
+    视图名可省略文件扩展名，这种情况下使用 .php 作为扩展
+    
+    视图名以双斜杠 // 开头，对应的视图文件路径为 @app/views/ViewName，
+        例如 //site/about 对应到 @app/views/site/about.php。
+    视图名以单斜杠/开始，视图文件路径以当前使用模块 的view path开始， 如果不存在模块，使用@app/views/ViewName开始
+        例如，如果当前模块为user， /user/create 对应成 @app/[modules/user/]views/user/create.php
+        
+    如果 context 渲染视图 并且上下文实现了 yii\base\ViewContextInterface, 视图文件路径由上下文的 view path 开始， 这种主要用在控制器和小部件中渲染视图，
+        例如 如果上下文为控制器SiteController，site/about 对应到 @app/views/site/about.php。
+        
+    如果视图渲染另一个视图，包含另一个视图文件的目录以当前视图的文件路径开始， 
+        例如被视图@app/views/post/index.php 渲染的 item 对应到 @app/views/post/item
+### 视图中访问数据
+    推送：
+    推送方式是通过视图渲染方法的第二个参数传递数据， 数据格式应为名称-值的数组， 
+    视图渲染时，调用PHP extract() 方法将该数组转换为视图可访问的变量。
+    
+    拉取：
+    可让视图从view component视图组件或其他对象中主动获得数据(如Yii::$app)
+        The controller ID is: <?= $this->context->id ?>
+        
+    视图间共享数据：
+    view component视图组件提供params 参数属性来让不同视图共享数据。
+        $this->params['breadcrumbs'][] = 'About Us';
+## 布局
+    layout 可在不同层级（控制器、模块，应用）配置， 被置为 null 或 false 表示不使用布局
+    
+    布局默认存储在@app/[ModuleDir/]views/layouts路径下,默认 layout = 'main';
+    可配置yii\base\Application::$layout 或 yii\base\Controller::$layout 使用其他布局文件
+    也可以在 controller下指定 public $layout = '其他布局名称';
+    布局的值没有包含文件扩展名，默认使用 .php作为扩展名
+### 嵌套布局
+    此方法可以多层嵌套
+    <?php $this->beginContent('@app/views/layouts/base.php'); ?>
+    ...child layout content here...
+    <?php $this->endContent(); ?>
+    
+### 数据块
+    首先，在内容视图中定一个或多个数据块
+    <?php $this->beginBlock('block1'); ?>
+    ...content of block1...
+    <?php $this->endBlock(); ?>  
+    
+    然后，在布局视图中，数据块可用的话会渲染数据块， 如果数据未定义则显示一些默认内容。
+    <?php if (isset($this->blocks['block1'])): ?>
+        <?= $this->blocks['block1'] ?>
+    <?php else: ?>
+        ... default content for block1 ...
+    <?php endif; ?>
+### 注册Meta元标签   yii\web\View::registerMetaTag() 
+    元标签通常在布局中生成
+    如果想在内容视图中生成元标签，可在内容视图中调用yii\web\View::registerMetaTag()方法， 如下所示：
+        <?php
+        $this->registerMetaTag(['name' => 'keywords', 'content' => 'yii, framework, php']);
+        ?>  
+        <meta name="keywords" content="yii, framework, php">
+    重复标签只保留最后一个
+### 注册链接标签  yii\web\View::registerLinkTag()
+    和 Meta标签 类似，链接标签有时很实用，如自定义网站图标，指定Rss订阅，或授权OpenID到其他服务器。
+    $this->registerLinkTag([
+        'title' => 'Live News for Yii',
+        'rel' => 'alternate',
+        'type' => 'application/rss+xml',
+        'href' => 'http://www.yiiframework.com/rss.xml/',
+    ]);
+    <link title="Live News for Yii" rel="alternate" type="application/rss+xml" href="http://www.yiiframework.com/rss.xml/">
+    重复标签只保留最后一个
+### 视图事件    
+    View components 视图组件会在视图渲染过程中触发几个事件， 可以在内容发送给终端用户前，响应这些事件来添加内容到视图中或调整渲染结果。
+        例如，如下代码将当前日期添加到页面结尾处：
+        \Yii::$app->view->on(View::EVENT_END_BODY, function () {
+            echo date('Y-m-d');
+        });
+### 渲染静态页面
+    return $this->render('about');
+    如果Web站点包含很多静态页面，多次重复相似的代码显得很繁琐， 
+    为解决这个问题，可以使用一个在控制器中称为 yii\web\ViewAction 的独立动作。
+        例如：
+    
+        namespace app\controllers;
+    
+        use yii\web\Controller;
+    
+        class SiteController extends Controller
+        {
+            public function actions()
+            {
+                return [
+                    'page' => [
+                        'class' => 'yii\web\ViewAction',
+                    ],
+                ];
+            }
+        }
+        yii2可通过路由规则找到 actionID 对应的 view文件 进行渲染
+        
+    
+        
+                         

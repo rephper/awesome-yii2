@@ -343,6 +343,215 @@
         }
         yii2可通过路由规则找到 actionID 对应的 view文件 进行渲染
         
+## 模块
+    模块可以指定布局，不指定则默认使用应用的布局
     
+### 模块可以无限级嵌套
+    模块可以包含另一个包含模块的模块
+    getModule() 方法只返回子模块的直属的 父模块
+    在嵌套模块中的控制器，它的路由应包含它所有祖先模块的ID
+        子模块必须在父模块的 modules 属性中申明， 例如：
         
-                         
+        namespace app\modules\forum;
+        
+        class Module extends \yii\base\Module
+        {
+            public function init()
+            {
+                parent::init();
+        
+                $this->modules = [
+                    'admin' => [
+                        // 此处应考虑使用一个更短的命名空间
+                        'class' => 'app\modules\forum\modules\admin\Module',
+                    ],
+                ];
+            }
+        }
+### 模块中的控制台命令
+    模块也可以声明命令，这将通过 控制台 模式可用
+        更改 yii\base\Module::$controllerNamespace 属性
+        public function init()
+        {
+            parent::init();
+            if (Yii::$app instanceof \yii\console\Application) {
+                $this->controllerNamespace = 'app\modules\forum\commands';
+            }
+        }
+        在命令行通过 yii <module_id>/<command>/<sub_command> 执行
+### 路由
+    yii\base\Module::$defaultRoute 属性来决定使用哪个控制器/操作
+    在 yii\web\UrlManager::parseRequest() 被触发之前应该添加模块 URL 管理器规则。 
+    这就意味着在模块的 init() 将不会起作用，因为模块将在路由开始处理时被初始化。 
+    因此应该在 bootstrap stage 添加规则。 
+    使用 yii\web\GroupUrlRule 去实现模块的 URL 规则也是一种很好的做法。
+    如果一个模块用于 version API， 它的 URL 规则应该直接添加到应用程序配置的 urlManager 中。
+    
+## 过滤器
+    过滤器是 控制器动作 执行之前或之后执行的对象，例如权限控制、处理返回结果
+    过滤器本质上是一类特殊的 行为， 所以使用过滤器和 使用行为一样。 
+    可以在控制器类中覆盖它的 behaviors() 方法来声明过滤器
+        public function behaviors()
+        {
+            return [
+                [
+                    'class' => 'yii\filters\HttpCache',
+                    //  默认做到到所有的请求路由上，可指定作用或例外的请求路由
+                    'only' => ['index', 'view'],
+                    'except' => ['index'],
+                    //  在模块或应用主体中申明过滤器
+                    //  only、except 定义的是controller下的路由，而不是actionId
+                    //  因为在模块或应用主体中只用动作ID并不能唯一指定到具体动作。
+                    'lastModified' => function ($action, $params) {
+                        $q = new \yii\db\Query();
+                        return $q->from('user')->max('updated_at');
+                    },
+                ],
+            ];
+        }
+        
+    当一个动作有多个过滤器时，根据以下规则先后执行：
+        预过滤
+            按顺序执行应用主体中 behaviors() 列出的过滤器。
+            按顺序执行模块中 behaviors() 列出的过滤器。
+            按顺序执行控制器中 behaviors() 列出的过滤器。
+            如果任意过滤器终止动作执行， 后面的过滤器（包括预过滤和后过滤）不再执行。
+        成功通过预过滤后执行动作。
+        后过滤
+            倒序执行控制器中 behaviors() 列出的过滤器。
+            倒序执行模块中 behaviors() 列出的过滤器。
+            倒序执行应用主体中 behaviors() 列出的过滤器。
+    
+    创建过滤器
+        继承 yii\base\ActionFilter 类并覆盖 beforeAction() 或 afterAction() 方法来创建动作的过滤器
+        
+### 核心过滤器 
+    yii\filters\AccessControl 提供基于 rules 规则的访问控制
+        public function behaviors()
+        {
+            return [
+                'access' => [
+                    'class' => AccessControl::className(),
+                    'only' => ['create', 'update'],
+                    'rules' => [
+                        // 允许认证用户
+                        [
+                            'allow' => true,
+                            'roles' => ['@'],
+                        ],
+                        // 默认禁止其他用户
+                    ],
+                ],
+            ];
+        }
+        
+    认证方法过滤器 yii\filters\auth\HttpBasicAuth
+        使用基于 HTTP 基础认证方法的令牌,user identity class 类必须 实现 findIdentityByAccessToken() 方法。
+        public function behaviors()
+        {
+            return [
+                'basicAuth' => [
+                    'class' => HttpBasicAuth::className(),
+                ],
+            ];
+        } 
+        
+    支持响应内容格式处理和语言处理 yii\filters\ContentNegotiator
+    在应用主体生命周期过程中检测响应格式和语言简单很多， 
+    因此 ContentNegotiator 设计可被 引导启动组件调用的过滤器。
+    如果请求中没有检测到内容格式和语言， 使用 formats 和 languages 第一个配置项。
+    
+    HttpCache 利用 Last-Modified 和 Etag HTTP 头实现客户端缓存。
+    PageCache 实现服务器端整个页面的缓存。
+    RateLimiter 根据 漏桶算法 来实现速率限制。 主要用在实现 RESTful APIs
+    VerbFilter 检查请求动作的 HTTP 请求方式是否允许执行， 如果不允许，会抛出 HTTP 405异常。 
+    Cors filter 应在授权/认证过滤器之前定义， 以保证 CORS 头部被发送.
+    跨域资源共享 CORS 机制允许一个网页的许多资源（例如字体、JavaScript等） 这些资源可以通过其他域名访问获取。
+    
+## 小部件widget
+    小部件是面向对象方式来重用视图代码。
+    
+    Yii提供许多优秀的小部件，比如 active form，menu， jQuery UI widgets， Twitter Bootstrap widgets。
+        <?php
+        use yii\widgets\ActiveForm
+        use yii\jui\DatePicker;
+        echo DatePicker::widget(['name' => 'date']) ?>
+     当调用 yii\base\Widget::end() 的时候，一些小部件将使用 输出缓冲 来调整封闭的内容。
+     因此，当调用 yii\base\Widget::begin() 和 yii\base\Widget::end() 时，最好在同一个视图文件里。 
+     不遵循这个规则可能会导致意外的输出。 
+    
+    使用 widget() 方法
+        继承 yii\base\Widget 类并覆盖 yii\base\Widget::init() 和/或 yii\base\Widget::run() 方法可创建小部件。
+        通常 init() 方法处理小部件属性， run() 方法包含小部件生成渲染结果的代码。
+        渲染结果可以直接“输出”或通过 run() 方法作为字符串返回。
+        当你调用 yii\base\Widget::begin() 时会创建一个新的小部件 实例并在构造结束时调用 init() 方法， 
+        在 end() 时会调用 run() 方法并输出返回结果。
+        
+        有时小部件需要渲染很多内容,可以在 run() 方法中嵌入内,但是建议调用 yii\base\Widget::render() 方法渲染视图文件
+        
+## 资源
+    Yii 中的资源是和 Web 页面相关的文件，可为 CSS 文件，JavaScript 文件，图片或视频等， 
+    资源放在 Web 可访问的目录下，直接被 Web 服务器调用。
+    
+    资源包指定为继承 yii\web\AssetBundle 的 PHP 类， 
+    包名为可自动加载的 PHP 类名， 在资源包类中，要指定资源所在位置， 
+    包含哪些 CSS 和 JavaScript 文件以及和其他包的依赖关系。
+        <?php
+        
+        namespace app\assets;
+        
+        use yii\web\AssetBundle;
+        
+        class AppAsset extends AssetBundle
+        {
+            public $basePath = '@webroot';
+            public $baseUrl = '@web';
+            public $css = [
+                'css/site.css',
+                ['css/print.css', 'media' => 'print'],
+            ];
+            public $js = [
+            ];
+            public $depends = [
+                'yii\web\YiiAsset',
+                'yii\bootstrap\BootstrapAsset',
+            ];
+        }
+    
+    当定义资源包类时候，如果你指定了sourcePath 属性， 就表示任何使用相对路径的资源会被当作源资源； 
+    如果没有指定该属性，就表示这些资源为发布资源（因此应指定basePath 和 baseUrl 让 Yii 知道它们的位置）。    
+    推荐将资源文件放到 Web 目录以避免不必要的发布资源过程
+    source path 属性不要用 @webroot/assets，该路径默认为 asset manager 资源管理器将源资源发布后存储资源的路径， 
+    该路径的所有内容会认为是临时文件， 可能会被删除。            
+    
+    为使用资源包，先在视图中调用 yii\web\AssetBundle::register() 方法注册资源
+    AppAsset::register($this);  // $this 代表视图对象
+    如果在其他地方注册资源包，应提供视图对象，如在 小部件 类中注册资源包， 可以通过 $this->view 获取视图对象。
+    
+    从 2.0.13 开始，基本和高级应用程序模板都默认配置使用 asset-packagist 
+    这种方式将满足大多数需要使用 NPM 或 Bower 包项目的要求。
+    
+    与 asset-packagist 相比，composer-asset-plugin 不需要对应用程序配置进行任何更改。 
+    而是需要运行以下命令来全局安装一个特殊的 Composer 插件：  
+        composer global require "fxp/composer-asset-plugin:^1.4.1"
+    这个命令会全局安装 composer asset plugin 插件， 以便使用 Composer 来管理对 Bower 和 NPM 包的依赖。 
+    在这个插件安装后， 你计算机上的每个项目都可以通过 composer.json 来管理 Bower 和 NPM 包。
+    
+## 扩展
+    yiisoft/yii2-apidoc： 提供了一个可扩展的、高效的 API 文档生成器。核心框架的 API 文档也是用它生成的。
+    yiisoft/yii2-authclient： 提供了一套常用的认证客户端，例如 Facebook OAuth2 客户端、GitHub OAuth2 客户端。
+    yiisoft/yii2-httpclient： 提供 HTTP 客户端。
+    yiisoft/yii2-imagine： 提供了基于 Imagine 的常用图像处理功能。
+    yiisoft/yii2-jui： 提供了一套封装 JQuery UI 的挂件以及它们的交互。
+    yiisoft/yii2-mongodb： 提供了对 MongoDB 的使用支持。它包含基本 的查询、活动记录、数据迁移、缓存、代码生成等特性。
+    yiisoft/yii2-queue： 通过队列异步提供运行任务的支持。 它支持基于 DB，Redis，RabbitMQ，AMQP，Beanstalk 和 Gearman 的队列。
+    yiisoft/yii2-redis： 提供了对 redis 的使用支持。它包含基本的 查询、活动记录、缓存等特性。
+    yiisoft/yii2-smarty： 提供了一个基于 Smarty 的模板引擎。
+    yiisoft/yii2-sphinx： 提供了对 Sphinx 的使用支持。它包含基本的 查询、活动记录、代码生成等特性。
+    yiisoft/yii2-swiftmailer： 提供了基于 swiftmailer 的邮件发送功能。
+    
+    yiisoft/yii2-captcha： 提供 CAPTCHA。
+    yiisoft/yii2-jquery： 为 jQuery 提供支持。
+    yiisoft/yii2-mssql： 提供对使用 MSSQL 的支持。
+    yiisoft/yii2-oracle： 提供对使用 Oracle 的支持。
+    yiisoft/yii2-rest： 提供对 REST API 的支持。    

@@ -1,11 +1,14 @@
 # Migration 数据库迁移
 
 ### 常用命令
-    //  创建文件
-    php yii migrate/create create_table_TABLE_NAME
-    php yii migrate/create create_table_TABLE_NAME --
-    //  执行迁移
+    //  创建文件 默认 --migrationPath=console/migrations
+    php yii migrate/create create_TABLE_NAME_table --migrationPath=console/migrations/mysql
+    php yii migrate/create create_junction_TABLE_A_and_TABLE_B
+    
+    //  执行迁移 默认全部
     php yii migrate
+    //  回滚迁移 默认1条
+    php yii migrate/down 3
     
     //  重新执行最近执行过的迁移
     php yii redo
@@ -18,9 +21,9 @@
 ### 文件命名规则
     不使用全局前缀
     同一个模块的 table_name 使用同样的前缀
-    实体表使用名词单数
-    关系表使用a_b_relation
-    create_table_TABLE_NAME
+    实体表使用名词单数 user
+    关系表使用 create_junction_TABLE_A_and_TABLE_B
+    create_TABLE_NAME_table
     add_COLUMNS_to_TABLE_NAME
     drop_COLUMNS_from_TABLE_NAME
     

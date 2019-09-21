@@ -15,12 +15,17 @@ class m190717_171857_create_mysql_int_table extends Migration
 
     private $table  = '{{%mysql_int}}';
 
+    public function __construct(array $config = [])
+    {
+        parent::__construct($config);
+        $this->db = Yii::$app->mysqlDemo;
+    }
+
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->db = Yii::$app->mysqlDemo;
         $options = $this->getMysqlOptions('InnoDB');
 
         $this->createTable(
@@ -31,8 +36,8 @@ class m190717_171857_create_mysql_int_table extends Migration
                 'boolean'             => " BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'boolean类型' ",
 
                 //  1 字节
-                'tiny_int'            => " TINYINT NOT NULL DEFAULT 100 COMMENT '有符号TinyInt' ",
-                'unsigned_tiny_int'   => " TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '无符号TinyInt' ",
+                'tiny_int'            => $this->tinyInteger()->notNull()->defaultValue(0)->comment('有符号TinyInt'),
+                'unsigned_tiny_int'   => $this->tinyInteger()->unsigned()->notNull()->defaultValue(0)->comment('无符号TinyInt'),
 
                 //  2 字节
                 'small_int'           => $this->smallInteger()->notNull()->defaultValue(0)->comment('有符号SmallInt'),
@@ -73,6 +78,7 @@ class m190717_171857_create_mysql_int_table extends Migration
      */
     public function safeDown()
     {
+        $this->db = Yii::$app->mysqlDemo;
         $this->dropTable($this->table);
     }
 

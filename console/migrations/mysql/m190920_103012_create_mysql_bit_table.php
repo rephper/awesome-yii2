@@ -10,12 +10,17 @@ class m190920_103012_create_mysql_bit_table extends Migration
 {
     use MigrationOptionsTrait;
 
+    public function __construct(array $config = [])
+    {
+        parent::__construct($config);
+        $this->db = Yii::$app->mysqlDemo;
+    }
+
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->db = Yii::$app->mysqlDemo;
         $options  = $this->getMysqlOptions('InnoDB');
 
         $this->createTable(

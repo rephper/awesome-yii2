@@ -18,6 +18,7 @@ if (!empty($namespace)) {
 ?>
 
 use yii\db\Migration;
+use common\traits\MigrationOptionsTrait;
 
 /**
  * Handles the creation of table `<?= $table ?>`.
@@ -27,11 +28,23 @@ use yii\db\Migration;
  */
 class <?= $className ?> extends Migration
 {
+    use MigrationOptionsTrait;
+
+    public function __construct(array $config = [])
+    {
+        parent::__construct($config);
+        //  默认主库
+        $this->db = Yii::$app->db;
+    }
+
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
+        //  默认 mysql InnoDBy引擎
+        $options  = $this->getMysqlOptions('InnoDB');
+
 <?= $this->render('_createTable', [
     'table' => $table,
     'fields' => $fields,

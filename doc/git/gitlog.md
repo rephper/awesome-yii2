@@ -16,3 +16,11 @@
 
 # 查看指定文件的提交记录
   git log file
+  
+# 删除分支
+## 删除指定分支
+  git branch -D branchName
+## 删除匹配到的分支
+  git branch | grep 'feature' | xargs git branch -d
+## 删除当前分支以外的所有分支
+  git branch | xargs git branch -d

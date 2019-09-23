@@ -5,6 +5,7 @@ use frontend\models\ResendVerificationEmailForm;
 use frontend\models\VerifyEmailForm;
 use Yii;
 use yii\base\InvalidArgumentException;
+use yii\helpers\VarDumper;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -20,6 +21,9 @@ use frontend\models\ContactForm;
  */
 class SiteController extends Controller
 {
+    //  指定默认动作，默认为index，可指定其他actionID
+    public $defaultAction = 'index';
+
     /**
      * {@inheritdoc}
      */
@@ -53,6 +57,7 @@ class SiteController extends Controller
 
     /**
      * {@inheritdoc}
+     * 要使用独立操作，需要通过控制器中覆盖yii\base\Controller::actions()方法在action map中申明
      */
     public function actions()
     {
@@ -120,10 +125,15 @@ class SiteController extends Controller
     public function actionContact()
     {
         $model = new ContactForm();
+        //  用户输入数据赋值到模型属性, 类名ContactForm与参数分组名ContactForm对应
+        //  $model->attributes = \Yii::$app->request->post('ContactForm');
+        //  load()通过反射 获取到 formName
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($model->sendEmail(Yii::$app->params['adminEmail'])) {
                 Yii::$app->session->setFlash('success', 'Thank you for contacting us. We will respond to you as soon as possible.');
             } else {
+                $errMsg = 'error: ' . VarDumper::dumpAsString($model->errors);
+                Yii::error($errMsg, __METHOD__);
                 Yii::$app->session->setFlash('error', 'There was an error sending your message.');
             }
 

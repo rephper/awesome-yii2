@@ -25,16 +25,19 @@ use common\traits\MigrationOptionsTrait;
 <?= $this->render('_foreignTables', [
     'foreignKeys' => $foreignKeys,
 ]) ?>
+ *
+ * @property string $table
  */
 class <?= $className ?> extends Migration
 {
     use MigrationOptionsTrait;
 
+    private $table = '<?= $table ?>';
+
     public function __construct(array $config = [])
     {
         parent::__construct($config);
-        //  默认主库
-        $this->db = Yii::$app->db;
+//        $this->db = Yii::$app->db;
     }
 
     /**
@@ -42,7 +45,6 @@ class <?= $className ?> extends Migration
      */
     public function safeUp()
     {
-        //  默认 mysql InnoDBy引擎
         $options  = $this->getMysqlOptions('InnoDB');
 
 <?= $this->render('_createTable', [
@@ -51,9 +53,14 @@ class <?= $className ?> extends Migration
     'foreignKeys' => $foreignKeys,
 ])
 ?>
-<?php if (!empty($tableComment)) {
+
+        $this->createIndex('index', $this->table, 'index', false);
+
+        $this->addCommentOnTable($this->table, '');
+<?php
+if (!empty($tableComment)) {
     echo $this->render('_addComments', [
-        'table' => $table,
+        'table' => '`$this->table`',
         'tableComment' => $tableComment,
     ]);
 }

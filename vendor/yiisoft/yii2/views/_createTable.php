@@ -2,6 +2,7 @@
 
 /**
  * Creates a call for the method `yii\db\Migration::createTable()`.
+ *
  */
 /* @var $table string the name table */
 /* @var $fields array the fields */
@@ -9,7 +10,7 @@
 
 ?>
         $this->createTable(
-            '<?= $table ?>',
+            $this->table,
             [
     <?php foreach ($fields as $field):
         if (empty($field['decorators'])): ?>

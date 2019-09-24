@@ -5,10 +5,14 @@ use common\traits\MigrationOptionsTrait;
 
 /**
  * Handles the creation of table `{{%mysql_bit}}`.
+ *
+ * @property string $table
  */
 class m190920_103012_create_mysql_bit_table extends Migration
 {
     use MigrationOptionsTrait;
+
+    private $table = '{{%mysql_bit}}';
 
     public function __construct(array $config = [])
     {
@@ -24,7 +28,7 @@ class m190920_103012_create_mysql_bit_table extends Migration
         $options  = $this->getMysqlOptions('InnoDB');
 
         $this->createTable(
-            '{{%mysql_bit}}',
+            $this->table,
             [
                 'id'    => $this->primaryKey(),
                 //  位类型，默认1 最大64
@@ -34,6 +38,8 @@ class m190920_103012_create_mysql_bit_table extends Migration
             ],
             $options
         );
+
+        $this->addCommentOnTable($this->table, 'mysql位类型');
     }
 
     /**
@@ -41,6 +47,6 @@ class m190920_103012_create_mysql_bit_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%mysql_bit}}');
+        $this->dropTable($this->table);
     }
 }

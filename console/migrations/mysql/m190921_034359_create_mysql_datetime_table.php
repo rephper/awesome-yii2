@@ -5,10 +5,14 @@ use common\traits\MigrationOptionsTrait;
 
 /**
  * Handles the creation of table `{{%mysql_datetime}}`.
+ *
+ * @property string $table
  */
 class m190921_034359_create_mysql_datetime_table extends Migration
 {
     use MigrationOptionsTrait;
+
+    private $table = '{{%mysql_datetime}}';
 
     public function __construct(array $config = [])
     {
@@ -29,7 +33,7 @@ class m190921_034359_create_mysql_datetime_table extends Migration
         $datetime  = date('Y-m-d H:i:s');
 
         $this->createTable(
-            '{{%mysql_datetime}}',
+            $this->table,
             [
                 'id'         => $this->primaryKey(),
                 'date'       => $this->date()->notNull()->defaultValue($date)->comment('日期'),
@@ -43,6 +47,8 @@ class m190921_034359_create_mysql_datetime_table extends Migration
             ],
             $options
         );
+
+        $this->addCommentOnTable($this->table, 'mysql日期时间类型');
     }
 
     /**
@@ -50,6 +56,6 @@ class m190921_034359_create_mysql_datetime_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%mysql_datetime}}');
+        $this->dropTable($this->table);
     }
 }

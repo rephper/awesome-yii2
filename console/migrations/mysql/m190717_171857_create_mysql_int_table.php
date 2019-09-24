@@ -7,7 +7,6 @@ use common\traits\MigrationOptionsTrait;
  * Class m190717_171857_create_mysql_int_table
  *
  * @property $table
- * @property $option
  */
 class m190717_171857_create_mysql_int_table extends Migration
 {

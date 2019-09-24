@@ -5,10 +5,14 @@ use common\traits\MigrationOptionsTrait;
 
 /**
  * Handles the creation of table `{{%mysql_char}}`.
+ *
+ * @property string $table
  */
 class m190921_024230_create_mysql_char_table extends Migration
 {
     use MigrationOptionsTrait;
+
+    private $table = '{{%mysql_char}}';
 
     public function __construct(array $config = [])
     {
@@ -24,7 +28,7 @@ class m190921_024230_create_mysql_char_table extends Migration
         $options  = $this->getMysqlOptions('MyISAM');
 
         $this->createTable(
-            '{{%mysql_char}}',
+            $this->table,
             [
                 'id'         => $this->primaryKey(),
 
@@ -54,6 +58,8 @@ class m190921_024230_create_mysql_char_table extends Migration
             ],
             $options
         );
+
+        $this->addCommentOnTable($this->table, 'mysql字符类型');
     }
 
     /**
@@ -61,6 +67,6 @@ class m190921_024230_create_mysql_char_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%mysql_char}}');
+        $this->dropTable($this->table);
     }
 }

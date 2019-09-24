@@ -7,7 +7,6 @@ use common\traits\MigrationOptionsTrait;
  * Handles the creation of table `{{%mysql_float}}`.
  *
  * @property $table
- * @property $option
  */
 class m190920_020834_create_mysql_float_table extends Migration
 {

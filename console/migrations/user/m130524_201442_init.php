@@ -29,7 +29,10 @@ class m130524_201442_init extends Migration
                 'updated_at' => $this->integer()->notNull(),
             ],
             $options
-        );}
+        );
+
+        $this->addCommentOnTable('{{%user}}', '用户表');
+    }
 
     public function down()
     {

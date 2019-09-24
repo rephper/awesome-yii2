@@ -36,9 +36,10 @@ class m190921_034359_create_mysql_datetime_table extends Migration
                 'time'       => $this->time()->notNull()->defaultValue($time)->comment('时间'),
                 'year'       => " YEAR NOT NULL DEFAULT " . $year . " COMMENT '年份' ",
                 'datetime'   => $this->dateTime()->notNull()->defaultValue($datetime)->comment('日期时间'),
-                //  timestamp 默认 ->notNull()->defaultValue(0000-00-00 00:00:00),
-                'timestamp'  => $this->timestamp()->notNull()->defaultValue($datetime)->comment('时间戳'),
-                'updated_at' => " TIMESTAMP NOT NULL on update CURRENT_TIMESTAMP  COMMENT '自动更新字段' ",
+                //  $this->timestamp()默认 ->notNull()->defaultValue(current_timestamp()),
+                'timestamp'  => $this->timestamp()->comment('时间戳'),
+                //  timestamp类型的默认值 需要大于 当前时区的格林威治时间戳的起点， 如东八区 1970-01-01 08:00:01
+                'updated_at' => " TIMESTAMP NOT NULL DEFAULT current_timestamp() on update CURRENT_TIMESTAMP  COMMENT '自动更新字段' ",
             ],
             $options
         );

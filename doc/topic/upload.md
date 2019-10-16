@@ -6,6 +6,7 @@ LNMP 文件上传限制
 ## PHP
   vim php.ini
   upload_max_filesize 100M;
+  post_max_size = 100M
 
 # 访问超时时间
 ## Nginx

@@ -11,6 +11,12 @@ return [
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'controllerNamespace' => 'frontend\controllers',
+    'modules' => [
+        'mysql' => [
+            'basePath' => '@frontend/modules/mysql',
+            'class' => 'frontend\modules\mysql\Module',
+        ],
+    ],
     'components' => [
         'request' => [
             'csrfParam' => '_csrf-frontend',
@@ -42,6 +48,7 @@ return [
             'showScriptName' => false,
             'rules'=>[
                 '<controller:\w+>/<action:\w+>'=>'<controller>/<action>',
+//                '<module:\w+>/<controller:\w+>/<action:\w+>'=>'<module>/<controller>/<action>'
             ],
         ],
 

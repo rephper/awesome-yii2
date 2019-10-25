@@ -1,21 +1,13 @@
 <div class="row">
-    <div class="col-lg-7">
-        <h1>使用gii生成一个Module</h1>
-        <img src="./imgs/giiGenerateModule.png" />
-    </div>
-    <div class="col-lg-5">
-        <div class="MySQL-default-index">
-            $this->context->action->uniqueId:<br >
-            <h2><?= $this->context->action->uniqueId ?></h2>
-            <br >
-            <pre>
-$this->context->action->id:
-    "<?= $this->context->action->id ?>".
-The action belongs to the controller
-    "<?= get_class($this->context) ?>"
-in the "<?= $this->context->module->id ?>" module.
-</pre>
-    </div>
-
+    <fieldset>
+        <legend>MySQL知识体系：</legend>
+        <li>数据库基础概念</li>
+        <li>SQL语句</li>
+        <li>数据库管理</li>
+        <li>性能优化</li>
+        <li>高级应用</li>
+        <li>集群</li>
+    </fieldset>
 </div>
+
 

@@ -12,10 +12,33 @@ return [
     'bootstrap' => ['log'],
     'controllerNamespace' => 'frontend\controllers',
     'modules' => [
+        'guide' => [
+            'basePath' => '@frontend/modules/guide',
+            'class' => 'frontend\modules\guide\Module',
+        ],
+
+        'linux' => [
+            'basePath' => '@frontend/modules/linux',
+            'class' => 'frontend\modules\linux\Module',
+        ],
+        'nginx' => [
+            'basePath' => '@frontend/modules/nginx',
+            'class' => 'frontend\modules\nginx\Module',
+        ],
         'mysql' => [
             'basePath' => '@frontend/modules/mysql',
             'class' => 'frontend\modules\mysql\Module',
         ],
+        'php' => [
+            'basePath' => '@frontend/modules/php',
+            'class' => 'frontend\modules\php\Module',
+        ],
+
+        'redis' => [
+            'basePath' => '@frontend/modules/redis',
+            'class' => 'frontend\modules\redis\Module',
+        ],
+
     ],
     'components' => [
         'request' => [
